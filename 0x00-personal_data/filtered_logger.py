@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script for processing and redacting log entries.
+"""A module for filtering logs.
 """
 import os
 import re
@@ -7,23 +7,25 @@ import logging
 import mysql.connector
 from typing import List
 
-# Definitions for regex patterns used to identify and mask sensitive data
+
 patterns = {
     'extract': lambda x, y: r'(?P<field>{})=[^{}]*'.format('|'.join(x), y),
     'replace': lambda x: r'\g<field>={}'.format(x),
 }
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
+
 def filter_datum(
         fields: List[str], redaction: str, message: str, separator: str,
         ) -> str:
-    """Redacts specified fields from a log message.
+    """Filters a log line.
     """
     extract, replace = (patterns["extract"], patterns["replace"])
     return re.sub(extract(fields, separator), replace(redaction), message)
 
+
 def get_logger() -> logging.Logger:
-    """Sets up a logger specifically for user information.
+    """Creates a new logger for user data.
     """
     logger = logging.getLogger("user_data")
     stream_handler = logging.StreamHandler()
@@ -33,8 +35,9 @@ def get_logger() -> logging.Logger:
     logger.addHandler(stream_handler)
     return logger
 
+
 def get_db() -> mysql.connector.connection.MySQLConnection:
-    """Establishes a connection to the MySQL database.
+    """Creates a connector to a database.
     """
     db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
     db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
@@ -49,8 +52,9 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     )
     return connection
 
+
 def main():
-    """Retrieves user records from the database and logs them.
+    """Logs the information about user records in a table.
     """
     fields = "name,email,phone,ssn,password,ip,last_login,user_agent"
     columns = fields.split(',')
@@ -70,8 +74,9 @@ def main():
             log_record = logging.LogRecord(*args)
             info_logger.handle(log_record)
 
+
 class RedactingFormatter(logging.Formatter):
-    """Formatter that masks sensitive data in log messages.
+    """ Redacting Formatter class
     """
 
     REDACTION = "***"
@@ -84,11 +89,12 @@ class RedactingFormatter(logging.Formatter):
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        """Redacts sensitive information from a log record.
+        """formats a LogRecord.
         """
         msg = super(RedactingFormatter, self).format(record)
         txt = filter_datum(self.fields, self.REDACTION, msg, self.SEPARATOR)
         return txt
+
 
 if __name__ == "__main__":
     main()
