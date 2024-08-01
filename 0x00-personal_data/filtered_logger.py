@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""This module contains a function that filters sensitive information from logs.
-"""
+"""This module contains a function that filters sensitive information from
+logs."""
 import os
 import re
 import logging
