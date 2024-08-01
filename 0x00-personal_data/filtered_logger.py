@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A module for filtering logs.
+"""This module contains a function that filters sensitive information from logs.
 """
 import os
 import re
@@ -18,14 +18,14 @@ PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 def filter_datum(
         fields: List[str], redaction: str, message: str, separator: str,
         ) -> str:
-    """Filters a log line.
+    """It filters sensitive information from a message.
     """
     extract, replace = (patterns["extract"], patterns["replace"])
     return re.sub(extract(fields, separator), replace(redaction), message)
 
 
 def get_logger() -> logging.Logger:
-    """Creates a new logger for user data.
+    """After filtering it logs the information to the console.
     """
     logger = logging.getLogger("user_data")
     stream_handler = logging.StreamHandler()
@@ -37,7 +37,7 @@ def get_logger() -> logging.Logger:
 
 
 def get_db() -> mysql.connector.connection.MySQLConnection:
-    """Creates a connector to a database.
+    """It then connects to the database
     """
     db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
     db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
